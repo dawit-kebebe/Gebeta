@@ -7,6 +7,7 @@ import { Notification } from "../components/NotifyFaildProcess";
 import { IncomingRequest } from "../components/IncomingReq";
 import GebetaGame from "../game/store/gebetaObjStore";
 import { GameState } from "../game/mode/Mode";
+import { WinnerMenu } from "../components/WinnerMenu";
 
 export function setupSocketHandlers(socketClient: Socket, appContainer: HTMLDivElement) {
     socketClient.on('user-went-offline', (playerId: string) => {
@@ -41,8 +42,8 @@ export function setupSocketHandlers(socketClient: Socket, appContainer: HTMLDivE
 
     socketClient.on('game:start', (game: any) => {
         state.setGame(game);
+        state.setPage('home');
         state.setPage('game');
-        console.log("Game Started", state.game);
     });
 
     socketClient.on('player:move', (gameState: GameState) => {
@@ -72,21 +73,40 @@ export function setupSocketHandlers(socketClient: Socket, appContainer: HTMLDivE
         }
     })
 
-    socketClient.on('player:captured', (gameStatusAndCaptured: GameState & { capturedPit: { capturedPit: number } }) => {
+    socketClient.on('player:captured', (gameStatusAndCaptured: GameState & { capturedPit: number }) => {
         const gebetaGameStore = GebetaGame.getInstance();
         const gebetaGame = gebetaGameStore.getGebeta()
         const gameMode = gebetaGameStore.getGameMode();
 
         if (gebetaGame) {
-            console.log("Cuptured pit no:", gameStatusAndCaptured.capturedPit.capturedPit);
-            const capPit = gebetaGame.pits[gameStatusAndCaptured.capturedPit.capturedPit]
-            console.log(capPit);
+            const capPit = gebetaGame.pits[gameStatusAndCaptured.capturedPit]
             capPit.flushStones()
         }
 
         if (gameMode) {
             gameMode.gameState = gameStatusAndCaptured;
+            state.game.challengee = gameStatusAndCaptured.challengee
+            state.game.challenger = gameStatusAndCaptured.challenger
         }
+    })
+
+    socketClient.on('game:over', (gameState: GameState, winner: {
+        id: string,
+        name: string,
+        username: string,
+        cupture: number
+    }) => {
+        const winnerMenu = WinnerMenu({
+            title: (winner.id === state.user.id) ? "You win!" : "You Lose!",
+            message: (winner.id === state.user.id) ?
+                `You win, by capturing ${winner.cupture} stones.` :
+                `You lost by only ${winner.cupture - ((state.user.id === gameState.challengee.id) ? gameState.challengee.cupture : gameState.challenger.cupture)} stones to ${winner.name}.`,
+            onClose: () => {
+                state.setPage("home");
+                winnerMenu.remove();
+            }
+        });
+        appContainer.appendChild(winnerMenu);
     })
 
     socketClient.on('disconnect', (reason, desc) => console.log("reason", reason, "desc", desc));

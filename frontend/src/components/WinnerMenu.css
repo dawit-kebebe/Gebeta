@@ -1,0 +1,46 @@
+.winner-menu-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.winner-menu-container .title {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.winner-menu-container .description {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.winner-menu-container .button-container {
+    display: flex;
+    justify-content: center;
+}
+
+.winner-menu-container .btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.winner-menu-container .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.winner-menu-container .btn-primary:hover {
+    background-color: #0056b3;
+}

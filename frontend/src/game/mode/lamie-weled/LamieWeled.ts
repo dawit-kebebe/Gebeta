@@ -1,5 +1,6 @@
 import { Notification as FaildNotify } from "../../../components/NotifyFaildProcess";
 import { socketClient } from "../../../utils/Network";
+import state from "../../../utils/StateManagement";
 import Gebeta from "../../Gebeta";
 import Pit from "../../Pit";
 import GameMode, { GameState, ThisPlayer } from "../Mode";
@@ -46,12 +47,20 @@ class LamieWeled extends GameMode {
     }
 
     private beforeTakeHook(takePit: Pit): boolean {
-        console.log('Before Take Hook');
-        console.log("Pit: ", takePit.whichPit());
-        console.log("Stone Count: ", takePit.getStones().length);
-        console.log("Lamie weled", this.gameState)
+        let sumOfStones = 0;
+        let isGameOver = false;
 
+        this.gebeta.pits.forEach((pit: Pit) => {
+            sumOfStones += pit.getStones().length;
+        })
 
+        if (sumOfStones < 4) {
+            socketClient.emit("game:over", { ...this.gameState }, (isOver: boolean) => {
+                isGameOver = isOver;
+            });
+        }
+
+        if (isGameOver) return false;
 
         if (this.gameState != null && this.gameState.gameStatus.turn === this.thisPlayer.id) {
             if (!this.gebeta.isAnimating && !this.gebeta.hand.moveHand) {
@@ -65,13 +74,18 @@ class LamieWeled extends GameMode {
                 if (capturePit !== undefined) {
                     const capturedStones = capturePit.getStones().length;
                     if (this.gameState.challengee.id === this.thisPlayer.id) {
+                        console.log(this.thisPlayer);
                         this.gameState.challengee.cupture += capturedStones;
+                        state.setChallengeeCupture(this.gameState.challengee.cupture);
                     }
 
                     if (this.gameState.challenger.id === this.thisPlayer.id) {
                         this.gameState.challenger.cupture += capturedStones;
+                        state.setChallengerCupture(this.gameState.challenger.cupture);
                     }
-                    socketClient.emit('player:captured', { ... this.gameState }, { capturedPit: capturePit.whichPit() }, (res: any) => {
+
+                    console.log(this.gameState)
+                    socketClient.emit('player:captured', { ... this.gameState, capturedPit: capturePit.whichPit() }, (res: any) => {
                         if (res)
                             capturePit.flushStones();
                     })
@@ -86,10 +100,6 @@ class LamieWeled extends GameMode {
     }
 
     private landedOnEmptyPitHook(emptyPit: Pit): void {
-        // console.log('Landed On Empty Pit Hook');
-        console.log("Pit: ", emptyPit.whichPit());
-        // console.log("Stone Count: ", emptyPit.getStones().length);
-
         this.gebeta.isDrawGo = false;
         this.gebeta.drawGoList = [];
 
@@ -103,9 +113,6 @@ class LamieWeled extends GameMode {
     }
 
     private landedOnNonEmptyPitHook(nonEmptyPit: Pit): boolean {
-        console.log('Landed On Non Empty Pit Hook');
-        console.log("Pit: ", nonEmptyPit.whichPit());
-        console.log("Stone Count: ", nonEmptyPit.getStones().length);
         return true;
     }
 

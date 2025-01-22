@@ -130,26 +130,26 @@ const home = (ioServer: Server) => {
             }
         })
 
-        socket.on('player:captured', (gameState: GameState, capturedPit: number, callback: (res: boolean) => void) => {
+        socket.on('player:captured', (gameState: GameState & { capturedPit: number }, callback: (res: boolean) => void) => {
             const activeGames = ActiveGames.getInstance();
             const gameSession = activeGames.getGame(gameState.gameId);
             if (gameSession != null) {
-                gameSession.challengee.cupture = gameState.challengee.cupture
-                gameSession.challenger.cupture = gameState.challenger.cupture
+                gameSession.challengee.cupture = gameState.challengee.cupture;
+                gameSession.challenger.cupture = gameState.challenger.cupture;
 
                 if (gameSession.challenger.id === socket.user.id) {
-                    const opponent = activeUserStore.getUser(gameSession.challengee.id)
+                    const opponent = activeUserStore.getUser(gameSession.challengee.id);
                     if (opponent === undefined) {
                         socket.emit('user:disconnected', gameSession.challengee);
                     } else {
-                        socket.to(opponent.socketId).emit("player:captured", { ...gameState, ...{ capturedPit } })
+                        socket.to(opponent.socketId).emit("player:captured", { ...gameState, capturedPit: gameState.capturedPit });
                     }
                 } else if (gameSession.challengee.id === socket.user.id) {
-                    const opponent = activeUserStore.getUser(gameSession.challenger.id)
+                    const opponent = activeUserStore.getUser(gameSession.challenger.id);
                     if (opponent === undefined) {
                         socket.emit('user:disconnected', gameSession.challenger);
                     } else {
-                        socket.to(opponent.socketId).emit("player:captured", { ...gameState, ...{ capturedPit } })
+                        socket.to(opponent.socketId).emit("player:captured", { ...gameState, capturedPit: gameState.capturedPit });
                     }
                 }
 
@@ -158,13 +158,46 @@ const home = (ioServer: Server) => {
                 socket.emit("game:session:error", {
                     gameId: gameState.gameId,
                     msg: "No game was found!"
-                })
+                });
             }
-        })
+        });
 
-        // socket.on('', (socket: any) => {
+        socket.on('game:over', (gameState: GameState, callback) => {
+            const activeGames = ActiveGames.getInstance();
+            const gameSession = activeGames.getGame(gameState.gameId);
 
-        // })
+            if (gameSession != null) {
+                gameSession.challengee.cupture = gameState.challengee.cupture;
+                gameSession.challenger.cupture = gameState.challenger.cupture;
+
+                const emitGameOver = (winner: string) => {
+                    const opponentId = winner === gameState.challenger.id ? gameSession.challengee.id : gameSession.challenger.id;
+                    const opponent = activeUserStore.getUser(opponentId);
+
+                    if (opponent === undefined) {
+                        socket.emit('user:disconnected', { id: opponentId });
+                    } else {
+                        socket.to(opponent.socketId).emit("game:over", { ...gameState, winner });
+                    }
+
+                    socket.emit("game:over", { ...gameState, winner });
+                    callback(true);
+                };
+
+                if (gameState.challengee.cupture < gameState.challenger.cupture) {
+                    emitGameOver(gameState.challenger.id);
+                } else if (gameState.challengee.cupture > gameState.challenger.cupture) {
+                    emitGameOver(gameState.challengee.id);
+                } else {
+                    callback(false);
+                }
+            } else {
+                socket.emit("game:session:error", {
+                    gameId: gameState.gameId,
+                    msg: "No game was found!"
+                });
+            }
+        });
 
         socket.on('disconnect', (reason: any) => {
             ioServer.emit('user-went-offline', socket.user.id);

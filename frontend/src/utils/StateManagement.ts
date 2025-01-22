@@ -20,17 +20,27 @@ let state = reactive({
 			id: "",
 			name: "",
 			username: "",
+			cupture: 0
 		},
 		challengee: {
 			id: "",
 			name: "",
 			username: "",
+			cupture: 0
 		},
 		gameMode: GameModeType.LM,
 		gameStatus: {
 			turn: "",
 			move: Array<number>(),
 		},
+	},
+
+	setChallengeeCupture(cupture: number) {
+		this.game.challengee.cupture = cupture;
+	},
+
+	setChallengerCupture(cupture: number) {
+		this.game.challenger.cupture = cupture;
 	},
 
 	setGame(game: {

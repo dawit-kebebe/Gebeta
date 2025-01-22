@@ -58,6 +58,7 @@
   padding: 0px 10px;
   background-color: #fff;
 }
+
 .search-container input {
   border: none;
   outline: none;
@@ -66,6 +67,7 @@
   border-radius: 25px;
   font-size: 16px;
 }
+
 .search-container button {
   border: none;
   background: none;
@@ -81,15 +83,15 @@
   max-width: calc(50% - (1.5em / 2));
 }
 
-.welcome-container > .section-content {
+.welcome-container>.section-content {
   overflow: hidden;
 }
 
-.welcome-container > .section-title {
+.welcome-container>.section-title {
   border-bottom: 1px solid var(--accentColor);
 }
 
-.welcome-container > .section-title img {
+.welcome-container>.section-title img {
   width: 5em;
 }
 
@@ -168,12 +170,16 @@ nav {
   content: "Search";
 }
 
-#game:hover::after {
+#active-players:hover::after {
   content: "Active Players";
 }
 
 #hunter:hover::after {
   content: "Tournaments";
+}
+
+#game:hover::after {
+  content: "Game";
 }
 
 .tab:hover::after {
@@ -274,7 +280,7 @@ nav {
   grid-template-columns: repeat(3, 1fr);
 }
 
-.active-player-list > .avatar,
+.active-player-list>.avatar,
 .active-player-info,
 .call-to-action {
   display: flex;
