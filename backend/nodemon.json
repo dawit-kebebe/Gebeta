@@ -1,9 +1,0 @@
-{
-    "watch": [
-        "./"
-    ],
-    "ext": "ts",
-    "execMap": {
-        "ts": "ts-node"
-    }
-}

@@ -2,17 +2,16 @@
   "name": "typeorm-sample",
   "version": "0.0.1",
   "description": "Awesome project developed with TypeORM.",
-  "type": "commonjs",
+  "type": "module",
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.7",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
-    "@types/node": "^16.11.10",
+    "@types/node": "^20.19.32",
     "@types/nodemailer": "^6.4.16",
-    "nodemon": "^3.1.4",
-    "ts-node": "10.9.1",
+    "esbuild": "0.27.3",
     "typescript": "4.5.2"
   },
   "dependencies": {
@@ -25,15 +24,14 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.1",
     "mysql": "^2.14.1",
-    "nodemailer": "^6.9.16",
+    "nodemailer": "^8.0.1",
     "reflect-metadata": "^0.1.13",
     "socket.io": "^4.8.1",
-    "typeorm": "0.3.20",
     "uuid": "^11.0.2"
   },
   "scripts": {
-    "start": "ts-node src/app.ts",
-    "dev": "nodemon src/app.ts",
-    "typeorm": "typeorm-ts-node-commonjs"
+    "build": "node src/esbuild.config.ts",
+    "start": "node build/app.js",
+    "dev": "npx tsx watch src/app.ts"
   }
 }

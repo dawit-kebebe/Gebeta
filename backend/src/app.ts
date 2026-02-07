@@ -1,23 +1,27 @@
-import express from 'express';
-import cors from 'cors';
-import whitelist from './origin-whitelist.json';
+import cookieParser from 'cookie-parser';
+import cors, { CorsOptions } from 'cors';
 import { config } from 'dotenv';
-import { Server } from 'socket.io';
-import init from './socket.io-adapter';
-import authRoute from './routes/auth';
+import express from 'express';
 import mongoose from 'mongoose';
 import path from 'path';
-import cookieParser from 'cookie-parser';
+import { fileURLToPath } from 'url';
+import { Server } from 'socket.io';
+import authRoute from './routes/auth';
+import gameRoute from './routes/game';
 import playerRoute from './routes/players';
 import tournamentRoute from './routes/tournament';
-import gameRoute from './routes/game';
+import init from './socket.io-adapter';
 
 config();
 const app = express();
 
-const corsOptions = {
+// // ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const corsOptions: CorsOptions = {
     origin: function (origin: any, callback: any) {
-        if (whitelist.origins.indexOf(origin) !== -1 || !origin) {
+        if ((process.env.ALLOWED_ORIGINS || '').split(',').includes(origin) || !origin) {
             callback(null, true)
         } else {
             callback(new Error('Not allowed by CORS'))
@@ -53,9 +57,7 @@ const mongoUri: string = process.env.MONGO_CONN || 'mongodb://127.0.0.1:27017/Ge
         })
 
         const socketIoServer: Server = new Server(server, {
-            cors: {
-                origin: whitelist.origins
-            }
+            cors: corsOptions
         });
 
         init(socketIoServer);
