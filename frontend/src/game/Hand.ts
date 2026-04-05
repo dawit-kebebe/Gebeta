@@ -1,4 +1,4 @@
-import { HAND_MOVE_SPEED, ROW_ONE_Y_DIFF, ROW_TWO_Y_DIFF } from "./config/constants";
+import { HAND_MOVE_SPEED } from "./config/constants";
 import { desktopConfig } from "./config/dimentions";
 import EventListener from "./EventListener";
 import Pit from "./Pit";
@@ -41,13 +41,21 @@ class Hand {
     private calculateHandMovement() {
         let moveByPxl = { x: HAND_MOVE_SPEED, y: 0, height: 0, width: 0 };
 
-        if (this.dimention.dX <= desktopConfig.pitsDimention[11].dX && this.dimention.dY == desktopConfig.pitsDimention[11].dY) {
+        if (this.dimention.dX <= desktopConfig.pitsDimention[11].dX && this.dimention.dY < desktopConfig.pitsDimention[0].dY) {
+            if (this.dimention.dX < desktopConfig.pitsDimention[11].dX) {
+                this.dimention.dX = desktopConfig.pitsDimention[11].dX;
+            }
+            if (this.dimention.dY === desktopConfig.pitsDimention[11].dY) {
+                this.currentCycle += 1;
+            }
             moveByPxl.x = 0;
-            moveByPxl.y = ROW_ONE_Y_DIFF;
-            this.currentCycle += 1;
-        } else if (this.dimention.dX >= desktopConfig.pitsDimention[5].dX && this.dimention.dY == desktopConfig.pitsDimention[5].dY) {
+            moveByPxl.y = Math.min(HAND_MOVE_SPEED, desktopConfig.pitsDimention[0].dY - this.dimention.dY);
+        } else if (this.dimention.dX >= desktopConfig.pitsDimention[5].dX && this.dimention.dY > desktopConfig.pitsDimention[6].dY) {
+            if (this.dimention.dX > desktopConfig.pitsDimention[5].dX) {
+                this.dimention.dX = desktopConfig.pitsDimention[5].dX;
+            }
             moveByPxl.x = 0;
-            moveByPxl.y = ROW_TWO_Y_DIFF;
+            moveByPxl.y = -Math.min(HAND_MOVE_SPEED, this.dimention.dY - desktopConfig.pitsDimention[6].dY);
         } else if (this.dimention.dY <= desktopConfig.pitsDimention[6].dY) {
             moveByPxl.x = -HAND_MOVE_SPEED;
             moveByPxl.y = 0;
